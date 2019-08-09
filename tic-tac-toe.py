@@ -113,7 +113,6 @@ class GameAI:
         if len(trival) != 0:
             # Check for a winning move
             for tMove in trival:
-                # print(tMove)
                 if tMove[0] == self.player:
                     game.move(tMove[1])
                     return tMove[1]
@@ -126,8 +125,29 @@ class GameAI:
         game.move(move)
         return move
 
-    def naive(self, game):
-        print('test')
+    def naive(self, game, lastMove, seed=None):
+        trival = self.trivalMove(game)
+        if len(trival) != 0:
+            # Check for a winning move
+            for tMove in trival:
+                if tMove[0] == self.player:
+                    game.move(tMove[1])
+                    return tMove[1]
+            # If no winning move pick the first move to stop from losing
+            game.move(trival[0][1])
+            return trival[0][1]
+        elif game.state[4] == -1:
+            game.move(4)
+            return 4
+        elif len(game.possibleMoves) == 8:
+            game.move(0)
+            return 0
+        elif len(game.possibleMoves) == 7:
+        print('random')
+        random.seed(seed)
+        move = random.choice(game.possibleMoves)
+        game.move(move)
+        return move
 
 
     # Returns a trivial move if there is one, None otherwise
@@ -173,11 +193,13 @@ def play(game):
     # if seed == '':
     #     seed = None
 
+    lastMove = None
     while not(game.done):
         if human == 1:
             # AI move here
             turn = game.turn + 1
-            aimove = ai.naiveRandom(game)
+            aimove = ai.naive(game, lastMove)
+            lastMove = aimove
             # Draw
             sketch(game)
             print(f'Player {turn}\'s move: {aimove}')
@@ -185,18 +207,21 @@ def play(game):
             if not(game.done):
                 turn = game.turn + 1
                 stdin = input(f'Player {turn}\'s move: ')
+                lastMove = int(stdin)
                 game.move(int(stdin))
         else:
             # Player move here
             turn = game.turn + 1
             stdin = input(f'Player {turn}\'s move: ')
+            lastMove = int(stdin)
             game.move(int(stdin))
             if game.winner == -1:
                 sketch(game)
             # AI move here
             if not(game.done):
                 turn = game.turn + 1
-                aimove = ai.naiveRandom(game)
+                aimove = ai.naive(game, lastMove)
+                lastMove = aimove
                 # Draw
                 sketch(game)
                 print(f'Player {turn}\'s move: {aimove}')
